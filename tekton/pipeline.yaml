@@ -9,6 +9,7 @@ spec:
     - name: repo-url
     - name: branch
       default: main
+    - name: build-image
   tasks:
     - name: clone
       workspaces:
@@ -36,28 +37,28 @@ spec:
       runAfter:
         - clone
 
-    - name: build
-      workspaces:
-        - name: source
-          workspace: pipeline-workspace
-      taskRef:
-        name: buildah
-      params:
-        - name: image
-          value: "quay.io/buildah/stable"
-      runAfter:
-        - lint
-
-      - name: tests
+    - name: tests
       workspaces:
         - name: source
           workspace: pipeline-workspace
       taskRef:
         name: nose
       params:
-      - name: database_uri
-        value: "sqlite:///test.db"
-      - name: args
-        value: "-v --with-spec --spec-color"
+        - name: args
+          value: "-v --with-spec --spec-color"
       runAfter:
         - clone
+
+    - name: build
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: "$(params.build-image)"
+      runAfter:
+        - lint
+        - tests
