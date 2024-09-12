@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: flake8
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: image
+      type: string
+    - name: args
+      type: array
+  steps:
+    - name: run-flake8
+      image: $(params.image)
+      workingDir: $(workspaces.source.path)
+      
